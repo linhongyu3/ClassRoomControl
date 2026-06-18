@@ -1,0 +1,11 @@
+[
+  {
+    "Id": "831723f7-58a4-4c21-976f-4a6c6ca8ec1c",
+    "IsEnabled": true,
+    "Time": "12:25",
+    "Type": "Shutdown",
+    "ProgramPath": null,
+    "ReminderMinutes": 3,
+    "Description": "\u5173\u673A (\u5012\u8BA1\u65F6 3 \u5206\u949F)"
+  }
+]

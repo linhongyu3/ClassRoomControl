@@ -1,0 +1,1754 @@
+<Window x:Class="ClassroomControl.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ClassroomControl"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        ui:WindowHelper.UseModernWindowStyle="True"
+        Title="班级电脑控制助手" 
+        Height="800" Width="1200"
+        MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterScreen"
+        Stylus.IsPressAndHoldEnabled="False"
+        Stylus.IsFlicksEnabled="False"
+        Closing="Window_Closing">
+
+    <Window.Resources>
+        <local:IndexToVisibilityConverter x:Key="IndexToVisibilityConverter"/>
+        <local:TimeRangesConverter x:Key="TimeRangesConverter"/>
+
+        <!-- 按钮阴影效果 -->
+        <DropShadowEffect x:Key="ButtonShadow" BlurRadius="4" ShadowDepth="2" Color="#99000000" Opacity="0.3"/>
+
+        <!-- 卡片样式 -->
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="24"/>
+            <Setter Property="Margin" Value="0,0,0,20"/>
+        </Style>
+
+        <!-- 区域标题 -->
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#37474F"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
+
+        <!-- 现代化按钮样式 -->
+        <Style x:Key="ModernButton" TargetType="Button">
+            <Setter Property="Height" Value="90"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" 
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="16,12"
+                                BorderThickness="1"
+                                BorderBrush="Transparent">
+                            <Border.Effect>
+                                <DropShadowEffect Color="Black" Opacity="0.15" BlurRadius="8" ShadowDepth="2"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 功能按钮（继承现代按钮样式） -->
+        <Style x:Key="ActionButton" TargetType="Button" BasedOn="{StaticResource ModernButton}"/>
+
+        <!-- 快捷启动小按钮 -->
+        <Style x:Key="QuickButton" TargetType="Button">
+            <Setter Property="Height" Value="90"/>
+            <Setter Property="Width" Value="90"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#424242"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border x:Name="bd" 
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="12"
+                                    Padding="10"
+                                    Panel.ZIndex="0"
+                                    RenderTransformOrigin="0.5,0.5">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="Black" Opacity="0.08" BlurRadius="6" ShadowDepth="1"/>
+                                </Border.Effect>
+                                <Border.RenderTransform>
+                                    <ScaleTransform x:Name="Scale" ScaleX="1" ScaleY="1"/>
+                                </Border.RenderTransform>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#F5F5F5"/>
+                                <Setter TargetName="bd" Property="Panel.ZIndex" Value="100"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="Scale" Storyboard.TargetProperty="ScaleX"
+                                                           To="1.12" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="Scale" Storyboard.TargetProperty="ScaleY"
+                                                           To="1.12" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="Scale" Storyboard.TargetProperty="ScaleX"
+                                                           To="1" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="Scale" Storyboard.TargetProperty="ScaleY"
+                                                           To="1" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#EEEEEE"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 返回按钮 -->
+        <Style x:Key="BackButton" TargetType="Button">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Width" Value="Auto"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="Foreground" Value="#424242"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#E8E8E8"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#BDBDBD"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#DDDDDD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 小操作按钮 -->
+        <Style x:Key="SmallButton" TargetType="Button">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                Effect="{DynamicResource ButtonShadow}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.9"/>
+                                <Setter TargetName="bd" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="1.02" ScaleY="1.02"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.8"/>
+                                <Setter TargetName="bd" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 输入框样式 -->
+        <Style TargetType="TextBox">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="BorderBrush" Value="#CFD8DC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Stylus.IsTouchFeedbackEnabled" Value="False"/>
+        </Style>
+
+        <Style TargetType="PasswordBox">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="BorderBrush" Value="#CFD8DC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Stylus.IsTouchFeedbackEnabled" Value="False"/>
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="8,0"/>
+            <Setter Property="Stylus.IsTouchFeedbackEnabled" Value="False"/>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Stylus.IsTouchFeedbackEnabled" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal">
+                            <Border x:Name="CheckBorder" 
+                                    Width="20" 
+                                    Height="20" 
+                                    Background="White" 
+                                    BorderBrush="#E0E0E0" 
+                                    BorderThickness="2" 
+                                    CornerRadius="4" 
+                                    Margin="0,0,8,0"
+                                    VerticalAlignment="Center">
+                                <Path x:Name="CheckMark" 
+                                      Stroke="White" 
+                                      StrokeThickness="2" 
+                                      Data="M 4 10 L 8 14 L 16 6" 
+                                      Stretch="Uniform" 
+                                      Width="12" 
+                                      Height="12"
+                                      Visibility="Collapsed"
+                                      VerticalAlignment="Center"
+                                      HorizontalAlignment="Center"/>
+                            </Border>
+                            <ContentPresenter x:Name="ContentSite" 
+                                            VerticalAlignment="Center" 
+                                            RecognizesAccessKey="True"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="#1E88E5"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckBorder" Property="Background" Value="#1E88E5"/>
+                                <Setter TargetName="CheckBorder" Property="BorderBrush" Value="#1E88E5"/>
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="CheckBorder" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="CheckBorder" Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 现代化 ComboBox 样式 -->
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleButton" 
+                                          Background="White" 
+                                          BorderBrush="#E0E0E0" 
+                                          BorderThickness="1"
+                                          IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press" Focusable="false">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="Border" 
+                                                Background="{TemplateBinding Background}" 
+                                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                                CornerRadius="6">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <ContentPresenter Grid.Column="0" 
+                                                                Margin="12,0" 
+                                                                VerticalAlignment="Center" 
+                                                                HorizontalAlignment="Left"/>
+                                                <Path Grid.Column="1" 
+                                                      x:Name="Arrow" 
+                                                      HorizontalAlignment="Center" 
+                                                      VerticalAlignment="Center" 
+                                                      Fill="#78909C" 
+                                                      Data="M 0 0 L 4 4 L 8 0 Z" 
+                                                      Width="10" 
+                                                      Height="6" 
+                                                      Margin="0,0,12,0"/>
+                                            </Grid>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Border" Property="BorderBrush" Value="#1E88E5"/>
+                                                <Setter TargetName="Arrow" Property="Fill" Value="#1E88E5"/>
+                                            </Trigger>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="Border" Property="BorderBrush" Value="#1E88E5"/>
+                                                <Setter TargetName="Arrow" Property="Fill" Value="#1E88E5"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter x:Name="ContentSite" 
+                                            IsHitTestVisible="False" 
+                                            Content="{TemplateBinding SelectionBoxItem}" 
+                                            ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" 
+                                            ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" 
+                                            Margin="12,0" 
+                                            VerticalAlignment="Center" 
+                                            HorizontalAlignment="Left"/>
+                            <TextBox x:Name="PART_EditableTextBox" 
+                                     Style="{x:Null}" 
+                                     HorizontalAlignment="Left" 
+                                     VerticalAlignment="Center" 
+                                     Margin="12,0" 
+                                     Focusable="True" 
+                                     Background="Transparent" 
+                                     Visibility="Hidden" 
+                                     IsReadOnly="{TemplateBinding IsReadOnly}"/>
+                            <Popup x:Name="Popup" 
+                                   Placement="Bottom" 
+                                   IsOpen="{TemplateBinding IsDropDownOpen}" 
+                                   AllowsTransparency="True" 
+                                   Focusable="False" 
+                                   PopupAnimation="Slide">
+                                <Grid x:Name="DropDown" 
+                                      SnapsToDevicePixels="True" 
+                                      MinWidth="{TemplateBinding ActualWidth}" 
+                                      MaxHeight="200">
+                                    <Border x:Name="DropDownBorder" 
+                                            Background="White" 
+                                            BorderBrush="#E0E0E0" 
+                                            BorderThickness="1" 
+                                            CornerRadius="6" 
+                                            Padding="4">
+                                        <ScrollViewer Margin="0" 
+                                                    SnapsToDevicePixels="True">
+                                            <StackPanel IsItemsHost="True" 
+                                                        KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="#1E88E5"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="ListBox">
+            <Setter Property="BorderBrush" Value="#CFD8DC"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Stylus.IsTouchFeedbackEnabled" Value="False"/>
+        </Style>
+
+        <!-- 任务列表项样式 - 禁用选中背景，保留悬停效果 -->
+        <Style x:Key="TaskListBoxItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#E3F2FD"/>
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="False"/>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Bd" Property="Background" Value="Transparent"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Slider">
+            <Setter Property="Stylus.IsTouchFeedbackEnabled" Value="False"/>
+        </Style>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#37474F"/>
+        </Style>
+
+        <!-- 现代化右键菜单样式 -->
+        <Style x:Key="ModernContextMenu" TargetType="ContextMenu">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="HasDropShadow" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContextMenu">
+                        <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="4" Padding="4">
+                            <ItemsPresenter/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernMenuItem" TargetType="MenuItem">
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#37474F"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="Border" Background="White" Padding="12,8" CornerRadius="4">
+                            <ContentPresenter x:Name="HeaderSite" ContentSource="Header" RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#E3F2FD"/>
+                                <Setter Property="Foreground" Value="#1E88E5"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#B0BEC5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ModernSeparator" TargetType="Separator">
+            <Setter Property="Background" Value="#E0E0E0"/>
+            <Setter Property="Margin" Value="8,4"/>
+            <Setter Property="Height" Value="1"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!-- 固定返回按钮（滚动时显示） -->
+        <Button x:Name="GlobalBackButton" 
+                Style="{StaticResource BackButton}"
+                HorizontalAlignment="Left" 
+                VerticalAlignment="Top" 
+                Margin="32,24,0,0" 
+                Click="BtnBackToHome_Click"
+                Visibility="Collapsed"
+                Panel.ZIndex="9999">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="&#xE830;" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"
+                           FontFamily="Segoe MDL2 Assets"/>
+                <TextBlock Text="返回主页" FontSize="15" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Button>
+        
+        <!-- 主内容区 -->
+        <Grid>
+
+            <!-- ========== 主页面板 ========== -->
+            <ScrollViewer x:Name="HomePanel" Padding="32,24" Visibility="Visible"
+                          PanningMode="VerticalOnly" Stylus.IsFlicksEnabled="False"
+                          PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
+                          ScrollChanged="ScrollViewer_ScrollChanged">
+                <StackPanel>
+
+                    <!-- 欢迎横幅 -->
+                    <Border CornerRadius="20" Padding="40,32" Margin="0,0,0,28">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#6200EA" Offset="0"/>
+                                <GradientStop Color="#7C4DFF" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Border.Effect>
+                            <DropShadowEffect Color="#6200EA" Opacity="0.35" BlurRadius="20" ShadowDepth="5"/>
+                        </Border.Effect>
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="关于" FontSize="16" Foreground="#E8EAF6"
+                                       VerticalAlignment="Center" Margin="16,0,0,0" Cursor="Hand"
+                                       MouseLeftButtonUp="BtnAbout_Click"/>
+                            <TextBlock DockPanel.Dock="Right" Text="设置" FontSize="16" Foreground="#E8EAF6"
+                                       VerticalAlignment="Center" Margin="16,0,0,0" Cursor="Hand"
+                                       MouseLeftButtonUp="BtnSettings_Click"/>
+                            <StackPanel>
+                                <TextBlock Text="班级电脑控制助手" FontSize="40" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock Text="电源管理 | 任务计划 | 桌面整理 | 快速启动 | 应用管理" 
+                                           FontSize="16" Foreground="#E8EAF6" Margin="0,12,0,0"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- 电源控制 -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="电源控制" Style="{StaticResource SectionTitle}"/>
+                            <UniformGrid Columns="4" Rows="1" Margin="0,12,0,0">
+                                <Button Style="{StaticResource ModernButton}" Background="#FF5252" Foreground="White"
+                                        Click="BtnShutdown_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE7E8;" FontSize="28" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets"/>
+                                        <TextBlock Text="关机" FontSize="13" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource ModernButton}" Background="#FF5252" Foreground="White"
+                                        Click="BtnRestart_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE72C;" FontSize="28" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets"/>
+                                        <TextBlock Text="重启" FontSize="13" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource ModernButton}" Background="#2196F3" Foreground="White"
+                                        Click="BtnSleep_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="🌙" FontSize="28" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="睡眠" FontSize="13" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource ModernButton}" Background="#2196F3" Foreground="White"
+                                        Click="BtnHibernate_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE7E3;" FontSize="28" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets"/>
+                                        <TextBlock Text="休眠" FontSize="13" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </UniformGrid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 快速启动 -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="快速启动" Style="{StaticResource SectionTitle}"/>
+                            <WrapPanel x:Name="QuickLaunchPanel" Margin="0,12,0,0">
+                                <Button Style="{StaticResource QuickButton}" Click="BtnOpenBrowser_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE774;" FontSize="22" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets" Foreground="#1E88E5"/>
+                                        <TextBlock Text="浏览器" FontSize="12" Margin="0,5,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource QuickButton}" Click="BtnOpenExplorer_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE8B7;" FontSize="22" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets" Foreground="#FB8C00"/>
+                                        <TextBlock Text="文件管理器" FontSize="12" Margin="0,5,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource QuickButton}" Click="BtnOpenTaskManager_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE9D9;" FontSize="22" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets" Foreground="#43A047"/>
+                                        <TextBlock Text="任务管理器" FontSize="12" Margin="0,5,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource QuickButton}" Click="BtnOpenCmd_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE756;" FontSize="22" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets" Foreground="#546E7A"/>
+                                        <TextBlock Text="命令提示符" FontSize="12" Margin="0,5,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource QuickButton}" Click="BtnOpenSettings_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE713;" FontSize="22" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets" Foreground="#78909C"/>
+                                        <TextBlock Text="系统设置" FontSize="12" Margin="0,5,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button x:Name="BtnAddCustomApp" Style="{StaticResource QuickButton}" Click="BtnAddCustomApp_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE710;" FontSize="22" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets" Foreground="#90A4AE"/>
+                                        <TextBlock Text="添加应用" FontSize="12" Margin="0,5,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 功能导航 -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="功能导航" Style="{StaticResource SectionTitle}"/>
+                            <UniformGrid Columns="4" Rows="1" Margin="0,12,0,0">
+                                <Button Style="{StaticResource ModernButton}" Background="#00BFA5" Foreground="White"
+                                        Click="BtnOpenTaskPlan_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE8BC;" FontSize="28" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets"/>
+                                        <TextBlock Text="任务计划" FontSize="13" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource ModernButton}" Background="#FF9800" Foreground="White"
+                                        Click="BtnOpenOrganizer_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE8B7;" FontSize="28" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets"/>
+                                        <TextBlock Text="整理桌面" FontSize="13" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource ModernButton}" Background="#E040FB" Foreground="White"
+                                        Click="BtnOpenForegroundOptimization_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE7F6;" FontSize="28" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets"/>
+                                        <TextBlock Text="前台优化" FontSize="13" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource ModernButton}" Background="#03A9F4" Foreground="White"
+                                        Click="BtnAppUsage_Click">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE8F1;" FontSize="28" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets"/>
+                                        <TextBlock Text="应用管理" FontSize="13" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </UniformGrid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- USB设备 -->
+                    <Border x:Name="UsbPanel" Style="{StaticResource Card}" Visibility="Collapsed"
+                            Background="#FFF8E1">
+                        <StackPanel>
+                            <TextBlock Text="USB设备" Style="{StaticResource SectionTitle}" Foreground="#F57F17"/>
+                            <TextBlock Text="检测并安全弹出U盘" FontSize="13" Foreground="#795548" Margin="0,0,0,12"/>
+                            <StackPanel x:Name="UsbDevicesPanel" Margin="0,8,0,0">
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 开发者工具 -->
+                    <Border x:Name="DevToolsPanel" Style="{StaticResource Card}" Visibility="Collapsed"
+                            Background="#FFF8E1" Margin="0,0,0,18">
+                        <StackPanel>
+                            <TextBlock Text="开发者工具" Style="{StaticResource SectionTitle}" Foreground="#F57F17"/>
+                            <TextBlock Text="以下按钮用于测试各独立页面的显示效果" FontSize="12" Foreground="#795548" Margin="0,0,0,12"/>
+                            <WrapPanel>
+                                <Button Style="{StaticResource QuickButton}" Click="DevTestShutdownReminder_Click"
+                                        Background="#FFF3E0" Foreground="#E65100">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE783;" FontSize="24" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets" Foreground="#E65100"/>
+                                        <TextBlock Text="关机提醒" FontSize="13" Margin="0,4,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource QuickButton}" Click="DevTestSettings_Click"
+                                        Background="#E3F2FD" Foreground="#1565C0">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE713;" FontSize="24" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets" Foreground="#1565C0"/>
+                                        <TextBlock Text="设置页面" FontSize="13" Margin="0,4,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource QuickButton}" Click="DevTestAbout_Click"
+                                        Background="#F3E5F5" Foreground="#7B1FA2">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE946;" FontSize="24" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets" Foreground="#7B1FA2"/>
+                                        <TextBlock Text="关于页面" FontSize="13" Margin="0,4,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Style="{StaticResource QuickButton}" Click="DevTestAppUsage_Click"
+                                        Background="#E8F5E9" Foreground="#2E7D32">
+                                    <StackPanel>
+                                        <TextBlock Text="&#xE8B7;" FontSize="24" HorizontalAlignment="Center"
+                                                   FontFamily="Segoe MDL2 Assets" Foreground="#2E7D32"/>
+                                        <TextBlock Text="应用限制" FontSize="13" Margin="0,4,0,0" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 系统信息和操作日志 -->
+                    <Grid Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 系统信息 -->
+                        <Border Grid.Column="0" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="系统信息" Style="{StaticResource SectionTitle}"/>
+                                <Grid Margin="0,12,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" MinWidth="90"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="计算机名" FontSize="14" Foreground="#78909C" Margin="0,0,20,12"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="TxtComputerName" FontSize="14" Margin="0,0,0,12"/>
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="操作系统" FontSize="14" Foreground="#78909C" Margin="0,0,20,12"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TxtOSVersion" FontSize="14" Margin="0,0,0,12"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0" Text="运行时间" FontSize="14" Foreground="#78909C" Margin="0,0,20,12"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="TxtUptime" FontSize="14" Margin="0,0,0,12"/>
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0" Text="电池状态" FontSize="14" Foreground="#78909C" Margin="0,0,20,12"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="TxtBattery" FontSize="14" Margin="0,0,0,12"/>
+
+                                    <TextBlock Grid.Row="4" Grid.Column="0" Text="管理员权限" FontSize="14" Foreground="#78909C" Margin="0,0,20,12"/>
+                                    <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,12">
+                                        <TextBlock x:Name="TxtAdminStatus" FontSize="14" VerticalAlignment="Center"/>
+                                        <Button x:Name="BtnRunAsAdmin" Content="以管理员身份运行" Height="32" Margin="12,0,0,0"
+                                                Background="#FF8F00" Foreground="White" FontSize="13" Padding="16,0"
+                                                Style="{StaticResource SmallButton}" Click="BtnRunAsAdmin_Click"/>
+                                    </StackPanel>
+
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 操作日志 -->
+                        <Border Grid.Column="2" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="操作日志" Style="{StaticResource SectionTitle}"/>
+                                <DockPanel Margin="0,0,0,12">
+                                    <Button x:Name="BtnClearLog" DockPanel.Dock="Right" Content="清空日志"
+                                            Height="32" FontSize="13" Padding="16,0"
+                                            Background="#90A4AE" Foreground="White" Style="{StaticResource SmallButton}"
+                                            Click="BtnClearLog_Click"/>
+                                    <TextBlock Text="最近记录的操作日志" FontSize="13" Foreground="#90A4AE" VerticalAlignment="Center"/>
+                                </DockPanel>
+                                <Border Background="#FAFAFA" CornerRadius="8" Padding="6" MaxHeight="280">
+                                    <ListBox x:Name="LstActivityLog" BorderThickness="0" Background="Transparent"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="6,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" MinWidth="140"/>
+                                                    <ColumnDefinition Width="Auto" MinWidth="70"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" FontSize="12" Foreground="#90A4AE"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.Text>
+                                                        <Binding Path="Time" StringFormat="{}{0:MM-dd HH:mm:ss}"/>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                                <Border Grid.Column="1" CornerRadius="3" Padding="6,2" Margin="8,0,12,0"
+                                                        Background="#E3F2FD" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Action}" FontSize="12" Foreground="#1565C0"
+                                                               FontWeight="Medium"/>
+                                                </Border>
+                                                <TextBlock Grid.Column="2" Text="{Binding Detail}" FontSize="12"
+                                                           Foreground="#546E7A" VerticalAlignment="Center"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           ToolTip="{Binding Detail}"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ========== 任务计划面板 ========== -->
+            <ScrollViewer x:Name="TaskPlanPanel" Padding="32,24" Visibility="Collapsed"
+                          PanningMode="VerticalOnly" Stylus.IsFlicksEnabled="False"
+                          PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
+                          ScrollChanged="ScrollViewer_ScrollChanged">
+                <StackPanel>
+                    <Button Style="{StaticResource BackButton}"
+                            HorizontalAlignment="Left" Margin="0,0,0,20" Click="BtnBackToHome_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE830;" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"
+                                       FontFamily="Segoe MDL2 Assets"/>
+                            <TextBlock Text="返回主页" FontSize="15" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="每日定时任务" Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Text="设置每日定时执行的任务，支持关机、重启、运行程序等操作。"
+                                       FontSize="14" Foreground="#78909C" Margin="0,0,0,20" TextWrapping="Wrap"/>
+
+                            <!-- 任务列表 -->
+                            <Border Background="#F5F7FA" CornerRadius="12" Padding="24" Margin="0,0,0,24">
+                                <StackPanel>
+                                    <TextBlock Text="已设置的任务" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                                    <ListBox x:Name="LstScheduledTasks" Height="240" SelectionMode="Multiple" 
+                                             MouseRightButtonUp="LstScheduledTasks_MouseRightButtonUp"
+                                             MinWidth="600" HorizontalContentAlignment="Stretch"
+                                             ItemContainerStyle="{StaticResource TaskListBoxItemStyle}"
+                                             ScrollViewer.PanningMode="None"
+                                             Stylus.IsTapFeedbackEnabled="False"
+                                             Stylus.IsTouchFeedbackEnabled="False"
+                                             Background="Transparent">
+                                        <ListBox.ContextMenu>
+                                            <ContextMenu Style="{StaticResource ModernContextMenu}">
+                                                <MenuItem Header="编辑任务" Click="EditTaskMenuItem_Click" Style="{StaticResource ModernMenuItem}"/>
+                                                <MenuItem Header="删除任务" Click="DeleteTaskMenuItem_Click" Style="{StaticResource ModernMenuItem}"/>
+                                            </ContextMenu>
+                                        </ListBox.ContextMenu>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="8" Padding="12,8" Margin="0,4"
+                                                        HorizontalAlignment="Stretch">
+                                                    <Grid HorizontalAlignment="Stretch">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <CheckBox Grid.Column="0" Margin="0,0,16,0"
+                                                                  VerticalAlignment="Center"
+                                                                  IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding Description}" FontSize="15" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="2" Text="{Binding Time}"
+                                                                   Foreground="#1E88E5" FontWeight="Bold" FontSize="15"
+                                                                   VerticalAlignment="Center" Margin="24,0"/>
+                                                        <CheckBox Grid.Column="3" IsChecked="{Binding IsEnabled}" Margin="24,0,0,0"
+                                                                  VerticalAlignment="Center" HorizontalAlignment="Right" Width="44" Height="24">
+                                                            <CheckBox.Template>
+                                                                <ControlTemplate TargetType="CheckBox">
+                                                                    <Grid>
+                                                                        <Border x:Name="Track" Background="#E0E0E0" CornerRadius="12" Width="44" Height="24"/>
+                                                                        <Ellipse x:Name="Thumb" Fill="White" Width="20" Height="20" HorizontalAlignment="Left" Margin="2">
+                                                                            <Ellipse.RenderTransform>
+                                                                                <TranslateTransform x:Name="ThumbTransform" X="0"/>
+                                                                            </Ellipse.RenderTransform>
+                                                                        </Ellipse>
+                                                                    </Grid>
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsChecked" Value="True">
+                                                                            <Setter TargetName="Track" Property="Background" Value="#4CAF50"/>
+                                                                            <Trigger.EnterActions>
+                                                                                <BeginStoryboard>
+                                                                                    <Storyboard>
+                                                                                        <DoubleAnimation Storyboard.TargetName="ThumbTransform" Storyboard.TargetProperty="X" To="20" Duration="0:0:0.2"/>
+                                                                                    </Storyboard>
+                                                                                </BeginStoryboard>
+                                                                            </Trigger.EnterActions>
+                                                                            <Trigger.ExitActions>
+                                                                                <BeginStoryboard>
+                                                                                    <Storyboard>
+                                                                                        <DoubleAnimation Storyboard.TargetName="ThumbTransform" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.2"/>
+                                                                                    </Storyboard>
+                                                                                </BeginStoryboard>
+                                                                            </Trigger.ExitActions>
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </CheckBox.Template>
+                                                        </CheckBox>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                    <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                                        <Button Content="删除选中" Height="40"
+                                                Background="#E53935" Style="{StaticResource SmallButton}"
+                                                Width="120" Margin="0,0,12,0" FontSize="15"
+                                                Click="BtnRemoveTask_Click"/>
+                                        <Button Content="清空全部" Height="40"
+                                                Background="#9E9E9E" Style="{StaticResource SmallButton}"
+                                                Width="120" FontSize="15"
+                                                Click="BtnClearAllTasks_Click"/>
+                                    </StackPanel>
+                                    <TextBlock x:Name="TxtTaskStatus" FontSize="15" Foreground="#FB8C00"
+                                               Margin="0,12,0,0" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 添加任务 -->
+                            <Border Background="#E3F2FD" CornerRadius="12" Padding="24">
+                                <StackPanel>
+                                    <TextBlock Text="添加新任务" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,20"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <!-- 执行时间 -->
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="执行时间" FontSize="13"
+                                                   VerticalAlignment="Center" Margin="0,0,10,10"/>
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" 
+                                                    Orientation="Horizontal" Margin="0,0,0,10" VerticalAlignment="Center">
+                                            <TextBlock Text="时" FontSize="12" Foreground="#90A4AE" 
+                                                       VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                            <TextBox x:Name="TxtTaskHour" Width="50" Text="00"
+                                                     VerticalContentAlignment="Center" TextAlignment="Center"
+                                                     MaxLength="2" Margin="0,0,8,0"/>
+                                            <TextBlock Text="分" FontSize="12" Foreground="#90A4AE" 
+                                                       VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                            <TextBox x:Name="TxtTaskMinute" Width="50" Text="00"
+                                                     VerticalContentAlignment="Center" TextAlignment="Center"
+                                                     MaxLength="2"/>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="任务类型" FontSize="13"
+                                                   VerticalAlignment="Center" Margin="0,0,10,10"/>
+                                        <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" 
+                                                  x:Name="CmbTaskType" Width="160" HorizontalAlignment="Left"
+                                                  SelectedIndex="0" Margin="0,0,0,10" Height="36" FontSize="14"
+                                                  Style="{StaticResource ModernComboBox}">
+                                            <ComboBoxItem Content="关机"/>
+                                            <ComboBoxItem Content="重启"/>
+                                            <ComboBoxItem Content="运行程序"/>
+                                            <ComboBoxItem Content="命令"/>
+                                        </ComboBox>
+
+                                        <!-- 倒计时时长 -->
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="倒计时时长" FontSize="13"
+                                                   VerticalAlignment="Center" Margin="0,0,10,10"/>
+                                        <StackPanel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" 
+                                                    Orientation="Horizontal" Margin="0,0,0,10" VerticalAlignment="Center">
+                                            <TextBox x:Name="TxtReminderMinutes" Width="60" Text="5"
+                                                     VerticalContentAlignment="Center" TextAlignment="Center"
+                                                     MaxLength="2" Margin="0,0,8,0"/>                                            
+                                            <TextBlock Text="分钟" FontSize="12" Foreground="#90A4AE" 
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="程序路径" FontSize="13"
+                                                   VerticalAlignment="Center" Margin="0,0,10,10"
+                                                   Visibility="{Binding SelectedIndex, ElementName=CmbTaskType, Converter={StaticResource IndexToVisibilityConverter}, ConverterParameter=2}"/>
+                                        <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" x:Name="TxtProgramPath"
+                                                 Margin="0,0,10,10" ToolTip="仅当任务类型为'运行程序'时需要填写"
+                                                 Visibility="{Binding SelectedIndex, ElementName=CmbTaskType, Converter={StaticResource IndexToVisibilityConverter}, ConverterParameter=2}"/>
+                                        <Button Grid.Row="3" Grid.Column="3" x:Name="BtnBrowseProgram"
+                                                Content="浏览..." Background="#546E7A" Style="{StaticResource SmallButton}"
+                                                Margin="0,0,0,10"
+                                                Visibility="{Binding SelectedIndex, ElementName=CmbTaskType, Converter={StaticResource IndexToVisibilityConverter}, ConverterParameter=2}"
+                                                Click="BtnBrowseProgram_Click"/>
+
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Text="命令内容" FontSize="13"
+                                                   VerticalAlignment="Center" Margin="0,0,10,10"
+                                                   Visibility="{Binding SelectedIndex, ElementName=CmbTaskType, Converter={StaticResource IndexToVisibilityConverter}, ConverterParameter=3}"/>
+                                        <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" x:Name="TxtCommand"
+                                                 Margin="0,0,0,10" ToolTip="输入要执行的CMD命令"
+                                                 Visibility="{Binding SelectedIndex, ElementName=CmbTaskType, Converter={StaticResource IndexToVisibilityConverter}, ConverterParameter=3}"/>
+
+                                        <Button Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4" x:Name="BtnAddTask"
+                                                Content="添加任务" Height="36" Width="140"
+                                                HorizontalAlignment="Left" Margin="0,8,0,0"
+                                                Background="#1E88E5" Style="{StaticResource SmallButton}"
+                                                Click="BtnAddTask_Click"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 说明 -->
+                            <Border Background="#FFF8E1" CornerRadius="8" Padding="14" Margin="0,18,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="使用说明" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="#F57F17"/>
+                                    <TextBlock FontSize="12" Foreground="#795548" LineHeight="20" TextWrapping="Wrap">
+                                        勾选/取消勾选可启用/禁用任务 | 每日指定时间自动执行 | 关机/重启前会弹出倒计时提醒（可自定义时长） | 设置自动保存
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ========== 整理桌面面板 ========== -->
+            <ScrollViewer x:Name="DesktopOrganizerPanel" Padding="32,24" Visibility="Collapsed"
+                          PanningMode="VerticalOnly" Stylus.IsFlicksEnabled="False"
+                          PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
+                          ScrollChanged="ScrollViewer_ScrollChanged">
+                <StackPanel>
+                    <Button Style="{StaticResource BackButton}"
+                            HorizontalAlignment="Left" Margin="0,0,0,20" Click="BtnBackToHome_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE830;" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"
+                                       FontFamily="Segoe MDL2 Assets"/>
+                            <TextBlock Text="返回主页" FontSize="15" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="整理桌面" Style="{StaticResource SectionTitle}"/>
+                            <Button Content="立即执行整理" Height="48" Width="160" Background="#FB8C00"
+                                    Style="{StaticResource SmallButton}" Margin="0,0,0,8" FontSize="15"
+                                    Click="BtnExecuteOrganizeNow_Click" HorizontalAlignment="Left"/>
+                            <TextBlock x:Name="TxtOrganizeResult" FontSize="12" Foreground="#4CAF50" Margin="0,0,0,12" Visibility="Collapsed"/>
+                            <TextBlock Text="将文件和文件夹从指定来源移动到目标文件夹，保持桌面整洁。"
+                                       FontSize="14" Foreground="#78909C" Margin="0,0,0,20" TextWrapping="Wrap"/>
+
+                            <!-- 定时自动执行 -->
+            <Border Background="#E3F2FD" CornerRadius="12" Padding="24" Margin="0,0,0,24">
+                <StackPanel>
+                    <Grid Margin="0,0,0,8">
+                        <TextBlock Text="定时自动执行" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <CheckBox x:Name="ChkAutoOrganizeEnabled" IsChecked="{Binding AutoExecuteEnabled}" Margin="0,0,0,0"
+                                  VerticalAlignment="Center" HorizontalAlignment="Right" Width="44" Height="24">
+                            <CheckBox.Template>
+                                <ControlTemplate TargetType="CheckBox">
+                                    <Grid>
+                                        <Border x:Name="Track" Background="#E0E0E0" CornerRadius="12" Width="44" Height="24"/>
+                                        <Ellipse x:Name="Thumb" Fill="White" Width="20" Height="20" HorizontalAlignment="Left" Margin="2">
+                                            <Ellipse.RenderTransform>
+                                                <TranslateTransform x:Name="ThumbTransform" X="0"/>
+                                            </Ellipse.RenderTransform>
+                                        </Ellipse>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="Track" Property="Background" Value="#4CAF50"/>
+                                            <Trigger.EnterActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="ThumbTransform" Storyboard.TargetProperty="X" To="20" Duration="0:0:0.2"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.EnterActions>
+                                            <Trigger.ExitActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetName="ThumbTransform" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.2"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.ExitActions>
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Track" Property="Opacity" Value="0.9"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </CheckBox.Template>
+                        </CheckBox>
+                    </Grid>
+                    <TextBlock Text="执行时间列表（支持多个时间点）" FontSize="14" Foreground="#78909C" Margin="0,0,0,16"/>
+                                    <ListBox x:Name="LstAutoOrganizeTimes" Height="240" Margin="0,0,0,10" SelectionMode="Multiple"
+                                             MouseRightButtonUp="LstAutoOrganizeTimes_MouseRightButtonUp"
+                                             HorizontalContentAlignment="Stretch"
+                                             ItemContainerStyle="{StaticResource TaskListBoxItemStyle}"
+                                             ScrollViewer.PanningMode="None"
+                                             Stylus.IsTapFeedbackEnabled="False"
+                                             Stylus.IsTouchFeedbackEnabled="False"
+                                             Background="Transparent">
+                                        <ListBox.ContextMenu>
+                                            <ContextMenu Style="{StaticResource ModernContextMenu}">
+                                                <MenuItem Header="编辑时间" Click="EditAutoTimeMenuItem_Click" Style="{StaticResource ModernMenuItem}"/>
+                                                <MenuItem Header="删除时间" Click="DeleteAutoTimeMenuItem_Click" Style="{StaticResource ModernMenuItem}"/>
+                                            </ContextMenu>
+                                        </ListBox.ContextMenu>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="8" Padding="12,8" Margin="0,4"
+                                                        HorizontalAlignment="Stretch">
+                                                    <Grid HorizontalAlignment="Stretch">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <CheckBox Grid.Column="0" Margin="0,0,16,0"
+                                                                  VerticalAlignment="Center"
+                                                                  IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding Time}" FontSize="15" VerticalAlignment="Center"/>
+                                                        <CheckBox Grid.Column="2" IsChecked="{Binding IsEnabled}" Margin="24,0,0,0"
+                                                                  VerticalAlignment="Center" HorizontalAlignment="Right" Width="44" Height="24">
+                                                            <CheckBox.Template>
+                                                                <ControlTemplate TargetType="CheckBox">
+                                                                    <Grid>
+                                                                        <Border x:Name="Track" Background="#E0E0E0" CornerRadius="12" Width="44" Height="24"/>
+                                                                        <Ellipse x:Name="Thumb" Fill="White" Width="20" Height="20" HorizontalAlignment="Left" Margin="2">
+                                                                            <Ellipse.RenderTransform>
+                                                                                <TranslateTransform x:Name="ThumbTransform" X="0"/>
+                                                                            </Ellipse.RenderTransform>
+                                                                        </Ellipse>
+                                                                    </Grid>
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsChecked" Value="True">
+                                                                            <Setter TargetName="Track" Property="Background" Value="#4CAF50"/>
+                                                                            <Trigger.EnterActions>
+                                                                                <BeginStoryboard>
+                                                                                    <Storyboard>
+                                                                                        <DoubleAnimation Storyboard.TargetName="ThumbTransform" Storyboard.TargetProperty="X" To="20" Duration="0:0:0.2"/>
+                                                                                    </Storyboard>
+                                                                                </BeginStoryboard>
+                                                                            </Trigger.EnterActions>
+                                                                            <Trigger.ExitActions>
+                                                                                <BeginStoryboard>
+                                                                                    <Storyboard>
+                                                                                        <DoubleAnimation Storyboard.TargetName="ThumbTransform" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.2"/>
+                                                                                    </Storyboard>
+                                                                                </BeginStoryboard>
+                                                                            </Trigger.ExitActions>
+                                                                        </Trigger>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter TargetName="Track" Property="Opacity" Value="0.9"/>
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </CheckBox.Template>
+                                                        </CheckBox>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
+                                        <TextBlock Text="时" FontSize="12" Foreground="#90A4AE" 
+                                                   VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBox x:Name="TxtAutoHour" Width="50" Text="00"
+                                                 VerticalContentAlignment="Center" TextAlignment="Center"
+                                                 MaxLength="2" Margin="0,0,8,0"/>
+                                        <TextBlock Text="分" FontSize="12" Foreground="#90A4AE" 
+                                                   VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBox x:Name="TxtAutoMinute" Width="50" Text="00"
+                                                 VerticalContentAlignment="Center" TextAlignment="Center"
+                                                 MaxLength="2" Margin="0,0,14,0"/>
+                                        <Button x:Name="BtnAddAutoTime" Content="添加"
+                                                Background="#1E88E5" Style="{StaticResource SmallButton}"
+                                                Width="80" Margin="0,0,5,0" Click="BtnAddAutoTime_Click"/>
+                                        <Button x:Name="BtnRemoveAutoTime" Content="移除选中"
+                                                Background="#78909C" Style="{StaticResource SmallButton}"
+                                                Width="80" Margin="0,0,5,0" Click="BtnRemoveAutoTime_Click"/>
+                                        <Button x:Name="BtnClearAllAutoTimes" Content="清空全部"
+                                                Background="#E53935" Style="{StaticResource SmallButton}"
+                                                Width="80" Click="BtnClearAllAutoTimes_Click"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 文件来源文件夹 -->
+                            <Border Background="#F5F7FA" CornerRadius="12" Padding="16" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="文件来源" FontSize="15" FontWeight="SemiBold" 
+                                                   VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                        <TextBox Grid.Column="1" x:Name="TxtOrganizeSourceFolder" Height="36" Margin="0,0,12,0" FontSize="14"/>
+                                        <Button Grid.Column="2" x:Name="BtnBrowseSourceFolder"
+                                                Content="浏览..." Background="#546E7A" Style="{StaticResource SmallButton}" Height="36" FontSize="14"
+                                                Click="BtnBrowseSourceFolder_Click"/>
+                                    </Grid>
+                                    <TextBlock FontSize="12" Foreground="#B0BEC5" Margin="0,4,0,0"
+                                               Text="留空则默认整理桌面文件"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 目标文件夹 -->
+                            <Border Background="#F5F7FA" CornerRadius="12" Padding="16" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="目标文件夹" FontSize="15" FontWeight="SemiBold" 
+                                                   VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                        <TextBox Grid.Column="1" x:Name="TxtOrganizeTargetFolder" Height="36" Margin="0,0,12,0" FontSize="14"/>
+                                        <Button Grid.Column="2" x:Name="BtnBrowseTargetFolder"
+                                                Content="浏览..." Background="#546E7A" Style="{StaticResource SmallButton}" Height="36" FontSize="14"
+                                                Click="BtnBrowseTargetFolder_Click"/>
+                                    </Grid>
+                                    <TextBlock FontSize="12" Foreground="#B0BEC5" Margin="0,4,0,0"
+                                               Text="留空则默认移动到桌面下的「整理后的文件」文件夹"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 排除文件夹 -->
+                            <Border Background="#F5F7FA" CornerRadius="12" Padding="24" Margin="0,0,0,24">
+                                <StackPanel>
+                                    <TextBlock Text="排除文件夹" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <TextBlock Text="以下名称的文件夹不会被移动（仅匹配名称，不区分大小写）" 
+                                               FontSize="14" Foreground="#90A4AE" Margin="0,0,0,16"/>
+                                    <ListBox x:Name="LstExcludedFolders" Height="100" Margin="0,0,0,10" SelectionMode="Multiple"
+                                             ScrollViewer.PanningMode="None"
+                                             Stylus.IsTapFeedbackEnabled="False"
+                                             Stylus.IsTouchFeedbackEnabled="False"
+                                             Background="Transparent"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0" x:Name="TxtNewExcludedFolder" Margin="0,0,10,0"/>
+                                        <Button Grid.Column="1" x:Name="BtnAddExcludedFolder" Content="添加"
+                                                Background="#43A047" Style="{StaticResource SmallButton}"
+                                                Width="60" Margin="0,0,8,0" Click="BtnAddExcludedFolder_Click"/>
+                                        <Button Grid.Column="2" x:Name="BtnRemoveExcludedFolder" Content="移除选中"
+                                                Background="#78909C" Style="{StaticResource SmallButton}"
+                                                Width="80" Margin="0,0,8,0" Click="BtnRemoveExcludedFolder_Click"/>
+                                        <Button Grid.Column="3" x:Name="BtnClearAllExcludedFolders" Content="清空全部"
+                                                Background="#9E9E9E" Style="{StaticResource SmallButton}"
+                                                Width="80" Click="BtnClearAllExcludedFolders_Click"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- 排除扩展名 -->
+                            <Border Background="#F5F7FA" CornerRadius="12" Padding="24" Margin="0,0,0,24">
+                                <StackPanel>
+                                    <TextBlock Text="排除扩展名" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                    <TextBlock Text="指定扩展名的文件不会被移动（如 png、pdf，不区分大小写）" 
+                                               FontSize="14" Foreground="#90A4AE" Margin="0,0,0,16"/>
+                                    <ListBox x:Name="LstExcludedExtensions" Height="100" Margin="0,0,0,10" SelectionMode="Multiple"
+                                             ScrollViewer.PanningMode="None"
+                                             Stylus.IsTapFeedbackEnabled="False"
+                                             Stylus.IsTouchFeedbackEnabled="False"
+                                             Background="Transparent"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="120"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0" x:Name="TxtNewExcludedExtension" Margin="0,0,10,0" 
+                                                 ToolTip="输入扩展名，如：png、pdf"/>
+                                        <Button Grid.Column="1" x:Name="BtnAddExcludedExtension" Content="添加"
+                                                Background="#43A047" Style="{StaticResource SmallButton}"
+                                                Width="60" Margin="0,0,8,0" Click="BtnAddExcludedExtension_Click"/>
+                                        <Button Grid.Column="2" x:Name="BtnRemoveExcludedExtension" Content="移除选中"
+                                                Background="#78909C" Style="{StaticResource SmallButton}"
+                                                Width="80" Margin="0,0,8,0" Click="BtnRemoveExcludedExtension_Click"/>
+                                        <Button Grid.Column="3" x:Name="BtnClearAllExcludedExtensions" Content="清空全部"
+                                                Background="#9E9E9E" Style="{StaticResource SmallButton}"
+                                                Width="80" Click="BtnClearAllExcludedExtensions_Click"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock x:Name="TxtOrganizeStatus" FontSize="14" Foreground="#1E88E5"
+                                       TextWrapping="Wrap" Margin="0,0,0,10"/>
+
+                            <!-- 说明 -->
+                            <Border Background="#FFF8E1" CornerRadius="12" Padding="24" Margin="0,24,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="使用说明" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" Foreground="#F57F17"/>
+                                    <TextBlock FontSize="14" Foreground="#795548" LineHeight="24" TextWrapping="Wrap">
+                                        .lnk 快捷方式不会被移动 | 排除规则按文件夹名称/扩展名匹配 | 同名文件自动添加时间戳 | 定时执行需保持程序运行 | 所有设置自动保存
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ========== 设置面板 ========== -->
+            <ScrollViewer x:Name="SettingsPanel" Padding="24,20" Visibility="Collapsed"
+                          PanningMode="VerticalOnly" Stylus.IsFlicksEnabled="False"
+                          PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
+                          ScrollChanged="ScrollViewer_ScrollChanged">
+                <StackPanel>
+                    <Button Style="{StaticResource BackButton}"
+                            HorizontalAlignment="Left" Margin="0,0,0,20" Click="BtnBackToHome_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE830;" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"
+                                       FontFamily="Segoe MDL2 Assets"/>
+                            <TextBlock Text="返回主页" FontSize="15" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <!-- 开机自启 -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="开机自启" Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Text="勾选后，电脑开机时会自动启动本程序。" FontSize="13" Foreground="#78909C" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                            <CheckBox x:Name="ChkAutoStart" Content="开机时自动启动本程序"
+                                      FontSize="14" VerticalAlignment="Center" Click="ChkAutoStart_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 日志密码 -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="日志密码" Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Text="设置密码后，清空日志时需要输入密码确认。" FontSize="13" Foreground="#78909C" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                            <TextBlock x:Name="TxtPasswordStatus" FontSize="13" Foreground="#546E7A" Margin="0,0,0,12"/>
+                            <StackPanel x:Name="PasswordEditPanel" Stylus.IsPressAndHoldEnabled="False">
+                                <TextBlock x:Name="TxtOldPwdLabel" Text="原密码" FontSize="13" Margin="0,0,0,4" Visibility="Collapsed"/>
+                                <PasswordBox x:Name="PwdOld" Height="34" FontSize="13" Padding="10,0"
+                                             Margin="0,0,0,10"
+                                             Stylus.IsPressAndHoldEnabled="False"
+                                             Stylus.IsTouchFeedbackEnabled="False"
+                                             Visibility="Collapsed"
+                                             HorizontalContentAlignment="Center"/>
+                                <TextBlock Text="新密码" FontSize="13" Margin="0,0,0,4"/>
+                                <PasswordBox x:Name="PwdNew" Height="34" FontSize="13" Padding="10,0"
+                                             Margin="0,0,0,10"
+                                             Stylus.IsPressAndHoldEnabled="False"
+                                             Stylus.IsTouchFeedbackEnabled="False"
+                                             HorizontalContentAlignment="Center"/>
+                                <TextBlock Text="确认密码" FontSize="13" Margin="0,0,0,4"/>
+                                <PasswordBox x:Name="PwdConfirm" Height="34" FontSize="13" Padding="10,0"
+                                             Margin="0,0,0,6"
+                                             Stylus.IsPressAndHoldEnabled="False"
+                                             Stylus.IsTouchFeedbackEnabled="False"
+                                             HorizontalContentAlignment="Center"/>
+                                <TextBlock x:Name="PwdError" FontSize="12" Foreground="#E53935"
+                                           Margin="0,0,0,8" Visibility="Collapsed"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="保存密码" Width="100" Background="#1E88E5"
+                                            Style="{StaticResource SmallButton}" Margin="0,0,10,0"
+                                            Click="BtnSavePassword_Click"/>
+                                    <Button Content="清除密码" Width="100" Background="#E53935"
+                                            Style="{StaticResource SmallButton}"
+                                            Click="BtnClearPassword_Click"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 前台优化面板 -->
+                    <Border Style="{StaticResource Card}" BorderBrush="#E0E0E0" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="开发者模式" Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Text="启用后在主页显示页面测试区域，用于调试各独立页面的显示效果。" FontSize="13" Foreground="#78909C" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                            <CheckBox x:Name="ChkDevMode" Content="启用开发者模式"
+                                      FontSize="14" VerticalAlignment="Center" Click="ChkDevMode_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 恢复默认 -->
+                    <Border Style="{StaticResource Card}" Background="#FFF8E1">
+                        <StackPanel>
+                            <TextBlock Text="恢复默认设置" Style="{StaticResource SectionTitle}" Foreground="#E65100"/>
+                            <TextBlock Text="点击下方按钮将删除所有配置文件，恢复程序到初始状态。此操作不可撤销！" 
+                                       FontSize="13" Foreground="#78909C" Margin="0,0,0,14" TextWrapping="Wrap"/>
+                            <Button Content="恢复默认" Width="140" Height="40" Background="#E53935"
+                                    Style="{StaticResource SmallButton}" FontSize="14"
+                                    Click="BtnResetSettings_Click"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- 前台优化面板 -->
+            <ScrollViewer x:Name="ForegroundOptimizationPanel" Padding="32,24" Visibility="Collapsed"
+                          PanningMode="VerticalOnly" Stylus.IsFlicksEnabled="False" 
+                          PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
+                          ScrollChanged="ScrollViewer_ScrollChanged">
+                <StackPanel>
+                    <Button Style="{StaticResource BackButton}" HorizontalAlignment="Left" Margin="0,0,0,20"
+                            Click="BtnBackToHome_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE830;" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"
+                                       FontFamily="Segoe MDL2 Assets"/>
+                            <TextBlock Text="返回主页" FontSize="15" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <!-- 标题 -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="前台优化" Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Text="管理进程优先级，确保关键应用流畅运行" FontSize="14" Foreground="#78909C" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 高优先级进程清单 -->
+                    <Border Background="#F5F7FA" CornerRadius="12" Padding="24" Margin="0,0,0,24">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <TextBlock Text="高优先级进程" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <Button x:Name="BtnRefreshHighPriority" Content="刷新" Style="{StaticResource SmallButton}" 
+                                        Background="#43A047" Foreground="White" Margin="8,0,0,0" VerticalAlignment="Center"
+                                        Click="BtnRefreshHighPriority_Click"/>
+                            </StackPanel>
+                            <ListBox x:Name="LstHighPriorityProcesses" Height="150" BorderThickness="0" Background="Transparent">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="{x:Type ListBoxItem}">
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="8" Padding="12,8" Margin="0,4"
+                                                HorizontalAlignment="Stretch" Background="#E8F5E9">
+                                            <Grid HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="32"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="100"/>
+                                                    <ColumnDefinition Width="80"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Image Grid.Column="0" Source="{Binding Icon}" Width="24" Height="24" 
+                                                       VerticalAlignment="Center" Margin="0,0,8,0" Stretch="UniformToFill"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding DisplayName}" FontSize="15" 
+                                                           TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding MemoryUsage}" FontSize="15" 
+                                                           Foreground="#66BB6A" VerticalAlignment="Center" TextAlignment="Center"/>
+                                                <Button Grid.Column="3" Content="恢复" Style="{StaticResource SmallButton}" 
+                                                        Background="#1E88E5" Foreground="White" Width="60"
+                                                        Click="BtnRestorePriority_Click" Tag="{Binding}" HorizontalAlignment="Right"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <TextBlock x:Name="TxtNoHighPriority" Text="暂无高优先级进程" FontSize="15" 
+                                       Foreground="#90A4AE" HorizontalAlignment="Center" Margin="0,10,0,0" 
+                                       Visibility="Collapsed"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 进程列表 -->
+                    <Border Background="#F5F7FA" CornerRadius="12" Padding="24" Margin="0,0,0,24">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <TextBlock Text="进程列表" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                <Button x:Name="BtnRefreshProcesses" Content="刷新" Style="{StaticResource SmallButton}" 
+                                        Background="#1E88E5" Foreground="White" Margin="8,0,0,0" VerticalAlignment="Center"
+                                        Click="BtnRefreshProcesses_Click"/>
+                            </StackPanel>
+                            <TreeView x:Name="TreeProcesses" Height="400" BorderThickness="0" Background="Transparent"
+                                      MouseRightButtonUp="TreeProcesses_MouseRightButtonUp">
+                                <TreeView.ItemContainerStyle>
+                                    <Style TargetType="{x:Type TreeViewItem}">
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="IsExpanded" Value="False"/>
+                                    </Style>
+                                </TreeView.ItemContainerStyle>
+                                <TreeView.ContextMenu>
+                                    <ContextMenu Style="{StaticResource ModernContextMenu}">
+                                        <MenuItem Header="设为高优先级" Click="SetHighPriorityMenuItem_Click" Style="{StaticResource ModernMenuItem}"/>
+                                        <MenuItem Header="恢复正常优先级" Click="SetNormalPriorityMenuItem_Click" Style="{StaticResource ModernMenuItem}"/>
+                                        <Separator Style="{StaticResource ModernSeparator}"/>
+                                        <MenuItem Header="结束进程" Click="EndProcessMenuItem_Click" Style="{StaticResource ModernMenuItem}"/>
+                                    </ContextMenu>
+                                </TreeView.ContextMenu>
+                            </TreeView>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 操作按钮 -->
+                    <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                        <Button x:Name="BtnSetHighPriority" Style="{StaticResource ActionButton}" 
+                                Background="#43A047" Foreground="White" Width="180"
+                                Click="BtnSetHighPriority_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8D0;" FontSize="20" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0"/>
+                                <TextBlock Text="设为高优先级" FontSize="14"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="BtnSetNormalPriority" Style="{StaticResource ActionButton}" 
+                                Background="#1E88E5" Foreground="White" Width="180" Margin="12,0,0,0"
+                                Click="BtnSetNormalPriority_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8D2;" FontSize="20" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0"/>
+                                <TextBlock Text="恢复正常优先级" FontSize="14"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="BtnEndProcess" Style="{StaticResource ActionButton}" 
+                                Background="#E53935" Foreground="White" Width="120" Margin="12,0,0,0"
+                                Click="BtnEndProcess_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE74D;" FontSize="20" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0"/>
+                                <TextBlock Text="结束进程" FontSize="14"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- 自动优化 -->
+                    <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                        <StackPanel>
+                            <TextBlock Text="自动优化" Style="{StaticResource SectionTitle}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <CheckBox x:Name="ChkAutoOptimize" Content="启用自动优化" Margin="0,0,12,0" IsChecked="False"/>
+                                <Button x:Name="BtnAutoOptimizeNow" Style="{StaticResource SmallButton}" 
+                                        Background="#7E57C2" Foreground="White"
+                                        Click="BtnAutoOptimizeNow_Click">
+                                    <TextBlock Text="立即优化" FontSize="13"/>
+                                </Button>
+                            </StackPanel>
+                            <TextBlock Text="自动优化会定期检测并提升前台应用的优先级" FontSize="12" Foreground="#78909C" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ========== 应用使用管理面板 ========== -->
+            <ScrollViewer x:Name="AppUsagePanel" Padding="32,24" Visibility="Collapsed"
+                          PanningMode="VerticalOnly" Stylus.IsFlicksEnabled="False"
+                          PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
+                          ScrollChanged="ScrollViewer_ScrollChanged">
+                <StackPanel>
+                    <Button Style="{StaticResource BackButton}"
+                            HorizontalAlignment="Left" Margin="0,0,0,20" Click="BtnBackToHome_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE830;" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"
+                                       FontFamily="Segoe MDL2 Assets"/>
+                            <TextBlock Text="返回主页" FontSize="15" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="应用使用管理" Style="{StaticResource SectionTitle}"/>
+                            <TextBlock Text="在指定时间段内禁止打开指定应用" 
+                                       FontSize="14" Foreground="#78909C" Margin="0,0,0,20" TextWrapping="Wrap"/>
+                            
+                            <Border Background="#F5F7FA" CornerRadius="12" Padding="24" Margin="0,0,0,24">
+                                <StackPanel>
+                                    <TextBlock Text="添加应用限制规则" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="应用名称" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Column="1" x:Name="TxtAppName" Margin="8,0"/>
+                                        <Button Grid.Column="2" Content="浏览..." Style="{StaticResource SmallButton}"
+                                                Background="#546E7A" Click="BtnBrowseApp_Click"/>
+                                    </Grid>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                        <TextBlock Text="限制时段" VerticalAlignment="Center"/>
+                                        <TextBox x:Name="TxtStartHour" Width="40" Text="08" TextAlignment="Center" Margin="8,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text=":" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBox x:Name="TxtStartMinute" Width="40" Text="00" TextAlignment="Center" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text=" 至 " VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBox x:Name="TxtEndHour" Width="40" Text="18" TextAlignment="Center" VerticalAlignment="Center"/>
+                                        <TextBlock Text=":" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                        <TextBox x:Name="TxtEndMinute" Width="40" Text="00" TextAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <Button x:Name="BtnAddAppRule" Content="添加规则" Background="#7B1FA2" Click="BtnAddAppRule_Click">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Height" Value="34"/>
+                                                <Setter Property="Padding" Value="14,0"/>
+                                                <Setter Property="FontSize" Value="13"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                                <Setter Property="BorderThickness" Value="0"/>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                                                    CornerRadius="8"
+                                                                    Padding="{TemplateBinding Padding}">
+                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="bd" Property="Background" Value="#9C27B0"/>
+                                                                    <Setter TargetName="bd" Property="Opacity" Value="0.9"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsPressed" Value="True">
+                                                                    <Setter TargetName="bd" Property="Background" Value="#9C27B0"/>
+                                                                    <Setter TargetName="bd" Property="Opacity" Value="0.8"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsEnabled" Value="False">
+                                                                    <Setter TargetName="bd" Property="Opacity" Value="0.5"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+                            
+                            <TextBlock Text="当前规则" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
+                            <ListBox x:Name="LstAppRules" Height="300" SelectionMode="Multiple" 
+                                     MouseRightButtonUp="LstAppRules_MouseRightButtonUp"
+                                     MinWidth="600" HorizontalContentAlignment="Stretch"
+                                     ItemContainerStyle="{StaticResource TaskListBoxItemStyle}">
+                                <ListBox.ContextMenu>
+                                    <ContextMenu Style="{StaticResource ModernContextMenu}">
+                                        <MenuItem Header="编辑规则" Click="EditAppRuleMenuItem_Click" Style="{StaticResource ModernMenuItem}"/>
+                                        <MenuItem Header="编辑时间段" Click="EditTimeRangeMenuItem_Click" Style="{StaticResource ModernMenuItem}"/>
+                                        <MenuItem Header="添加时间段" Click="AddTimeRangeMenuItem_Click" Style="{StaticResource ModernMenuItem}"/>
+                                        <Separator Style="{StaticResource ModernSeparator}"/>
+                                        <MenuItem Header="删除规则" Click="DeleteAppRuleMenuItem_Click" Style="{StaticResource ModernMenuItem}"/>
+                                    </ContextMenu>
+                                </ListBox.ContextMenu>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="8" Padding="12,8" Margin="0,4"
+                                                HorizontalAlignment="Stretch">
+                                            <Grid HorizontalAlignment="Stretch">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <CheckBox Grid.Column="0" Margin="0,0,16,0"
+                                                          VerticalAlignment="Center"
+                                                          IsChecked="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected, Mode=TwoWay}"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding AppName}" FontSize="15" VerticalAlignment="Center"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding TimeRanges, Converter={StaticResource TimeRangesConverter}}" 
+                                                           FontSize="13" Foreground="#546E7A" VerticalAlignment="Center" Margin="24,0"/>
+                                                <CheckBox Grid.Column="3" IsChecked="{Binding IsEnabled}" Margin="24,0,0,0"
+                                                          VerticalAlignment="Center" HorizontalAlignment="Right" Width="44" Height="24"
+                                                          Checked="AppRuleCheckBox_Checked" Unchecked="AppRuleCheckBox_Unchecked"
+                                                          Tag="{Binding}">
+                                                    <CheckBox.Template>
+                                                        <ControlTemplate TargetType="CheckBox">
+                                                            <Grid>
+                                                                <Border x:Name="Track" Background="#E0E0E0" CornerRadius="12" Width="44" Height="24"/>
+                                                                <Ellipse x:Name="Thumb" Fill="White" Width="20" Height="20" HorizontalAlignment="Left" Margin="2">
+                                                                    <Ellipse.RenderTransform>
+                                                                        <TranslateTransform x:Name="ThumbTransform" X="0"/>
+                                                                    </Ellipse.RenderTransform>
+                                                                </Ellipse>
+                                                            </Grid>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsChecked" Value="True">
+                                                                    <Trigger.EnterActions>
+                                                                        <BeginStoryboard>
+                                                                            <Storyboard>
+                                                                                <DoubleAnimation Storyboard.TargetName="ThumbTransform" Storyboard.TargetProperty="X" 
+                                                                                               To="20" Duration="0:0:0.2"/>
+                                                                                <ColorAnimation Storyboard.TargetName="Track" Storyboard.TargetProperty="Background.Color" 
+                                                                                              To="#4CAF50" Duration="0:0:0.2"/>
+                                                                            </Storyboard>
+                                                                        </BeginStoryboard>
+                                                                    </Trigger.EnterActions>
+                                                                    <Trigger.ExitActions>
+                                                                        <BeginStoryboard>
+                                                                            <Storyboard>
+                                                                                <DoubleAnimation Storyboard.TargetName="ThumbTransform" Storyboard.TargetProperty="X" 
+                                                                                               To="0" Duration="0:0:0.2"/>
+                                                                                <ColorAnimation Storyboard.TargetName="Track" Storyboard.TargetProperty="Background.Color" 
+                                                                                              To="#E0E0E0" Duration="0:0:0.2"/>
+                                                                            </Storyboard>
+                                                                        </BeginStoryboard>
+                                                                    </Trigger.ExitActions>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </CheckBox.Template>
+                                                </CheckBox>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                                <Button Content="删除选中" Height="40"
+                                        Background="#E53935" Style="{StaticResource SmallButton}"
+                                        Width="120" Margin="0,0,12,0" FontSize="15"
+                                        Click="BtnDeleteSelectedAppRules_Click"/>
+                                <Button Content="清空全部" Height="40"
+                                        Background="#9E9E9E" Style="{StaticResource SmallButton}"
+                                        Width="120" FontSize="15"
+                                        Click="BtnClearAllAppRules_Click"/>
+                            </StackPanel>
+                            
+                            <TextBlock Text="* 勾选启用规则，在限制时段内打开对应应用将被自动关闭" 
+                                       FontSize="12" Foreground="#90A4AE" Margin="0,12,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+        </Grid>
+    </Grid>
+</Window>
