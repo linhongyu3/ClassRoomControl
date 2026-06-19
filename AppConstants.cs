@@ -2,7 +2,7 @@ namespace ClassroomControl
 {
     public static class AppConstants
     {
-        public const string AppVersion = "1.0.3";
+        public const string AppVersion = "2.0.0";
         public const string AppName = "班级电脑控制助手";
         public const string AppNameEnglish = "ClassroomControl";
         public const string AppPublisher = "lhy";
