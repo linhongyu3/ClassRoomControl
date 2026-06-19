@@ -131,16 +131,7 @@ ClassroomControl/
 
 ---
 
-## 📝 发布说明
-
-发布新版本时请注意：
-
-1. 在 [`AppConstants.cs`](file:///d:/Product/ClassRoomControl/AppConstants.cs) 中更新 `AppVersion`（本项目版本号的唯一来源）
-2. GitHub Release 的 tag 请使用 `vX.Y.Z` 或 `X.Y.Z` 格式，以便 `UpdateService` 正确识别
-
----
-
-## 📄 许可证
+##  许可证
 
 本项目采用 **Apache License 2.0** 开源协议，完整条款见 [LICENSE](file:///d:/Product/ClassRoomControl/LICENSE) 文件。
 
