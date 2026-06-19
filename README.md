@@ -82,7 +82,7 @@ cd ClassroomControl
 dotnet build -c Release
 ```
 
-### 发布（单文件）
+### 发布
 ```bash
 dotnet publish -c Release -r win-x64 --self-contained false
 ```
