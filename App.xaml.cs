@@ -202,7 +202,7 @@ namespace ClassroomControl
             // 下载链接
             var downloadLink = new System.Windows.Controls.TextBlock
             {
-                Text = "\uD83D\uDD17 点击此处前往 .NET 8.0 下载页面",
+                Text = "\uD83D\uDD17 点击此处前往 .NET 10.0 下载页面",
                 FontSize = 13,
                 Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x1E, 0x88, 0xE5)),
                 Cursor = System.Windows.Input.Cursors.Hand,

@@ -14,6 +14,7 @@ namespace ClassroomControl.Services
     {
         private DispatcherTimer? _autoTimer;
         private string _configFile;
+        private string _lastExecutedTime = "";
 
         public event EventHandler<string>? StatusChanged;
 
@@ -117,9 +118,12 @@ namespace ClassroomControl.Services
 
             var currentTime = DateTime.Now.ToString("HH:mm");
 
+            if (currentTime == _lastExecutedTime) return;
+
             var enabledTime = Settings.AutoExecuteTimes.FirstOrDefault(t => t.Time == currentTime && t.IsEnabled);
             if (enabledTime != null)
             {
+                _lastExecutedTime = currentTime;
                 var result = OrganizeDesktop();
                 if (result.HasError)
                 {

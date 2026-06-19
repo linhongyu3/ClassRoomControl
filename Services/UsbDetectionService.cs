@@ -32,7 +32,7 @@ namespace ClassroomControl.Services
             
             try
             {
-                var searcher = new ManagementObjectSearcher(
+                using var searcher = new ManagementObjectSearcher(
                     "SELECT * FROM Win32_LogicalDisk WHERE DriveType=2");
                 
                 foreach (var device in searcher.Get())
@@ -111,7 +111,7 @@ namespace ClassroomControl.Services
         {
             try
             {
-                var searcher = new ManagementObjectSearcher(
+                using var searcher = new ManagementObjectSearcher(
                     $"SELECT * FROM Win32_LogicalDisk WHERE DeviceID='{driveLetter}'");
                 
                 foreach (var disk in searcher.Get())
@@ -260,8 +260,7 @@ namespace ClassroomControl.Services
         {
             try
             {
-                // 方法1：通过Win32_LogicalDisk获取卷标
-                var diskSearcher = new ManagementObjectSearcher(
+                using var diskSearcher = new ManagementObjectSearcher(
                     $"SELECT * FROM Win32_LogicalDisk WHERE DeviceID='{driveLetter}'");
                 
                 foreach (var disk in diskSearcher.Get())
@@ -273,18 +272,15 @@ namespace ClassroomControl.Services
                     }
                 }
 
-                // 方法2：通过Win32_Volume获取设备信息
-                var volumeSearcher = new ManagementObjectSearcher(
+                using var volumeSearcher = new ManagementObjectSearcher(
                     $"SELECT * FROM Win32_Volume WHERE DriveLetter='{driveLetter}'");
                 
                 foreach (var volume in volumeSearcher.Get())
                 {
-                    // 获取磁盘序列号用于关联
                     string serialNumber = volume["SerialNumber"]?.ToString() ?? string.Empty;
                     string deviceID = volume["DeviceID"]?.ToString() ?? string.Empty;
 
-                    // 通过Win32_DiskDrive获取USB设备信息
-                    var driveSearcher = new ManagementObjectSearcher(
+                    using var driveSearcher = new ManagementObjectSearcher(
                         "SELECT * FROM Win32_DiskDrive WHERE InterfaceType='USB'");
                     
                     foreach (var drive in driveSearcher.Get())
@@ -292,15 +288,14 @@ namespace ClassroomControl.Services
                         string driveDeviceID = drive["DeviceID"]?.ToString() ?? string.Empty;
                         string model = drive["Model"]?.ToString() ?? string.Empty;
 
-                        // 尝试通过关联获取设备名称
-                        var partitionSearcher = new ManagementObjectSearcher(
+                        using var partitionSearcher = new ManagementObjectSearcher(
                             "ASSOCIATORS OF {Win32_DiskDrive.DeviceID='" + 
                             driveDeviceID.Replace("\\", "\\\\") + 
                             "'} WHERE AssocClass=Win32_DiskDriveToDiskPartition");
                         
                         foreach (var partition in partitionSearcher.Get())
                         {
-                            var logicalSearcher = new ManagementObjectSearcher(
+                            using var logicalSearcher = new ManagementObjectSearcher(
                                 "ASSOCIATORS OF {Win32_DiskPartition.DeviceID='" + 
                                 partition["DeviceID"]?.ToString()?.Replace("\\", "\\\\") + 
                                 "'} WHERE AssocClass=Win32_LogicalDiskToPartition");

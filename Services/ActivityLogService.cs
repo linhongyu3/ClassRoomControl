@@ -9,13 +9,17 @@ namespace ClassroomControl.Services
 {
     public class ActivityLogService
     {
-        private const string LogFile = "activity_log.json";
+        private static readonly string LogFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "ClassroomControl");
+        private static readonly string LogFile = Path.Combine(LogFolder, "activity_log.json");
         private const int MaxLogs = 200;
 
         public ObservableCollection<LogEntry> Logs { get; } = new();
 
         public void Load()
         {
+            Logs.Clear();
             try
             {
                 if (File.Exists(LogFile))
@@ -36,6 +40,7 @@ namespace ClassroomControl.Services
         {
             try
             {
+                Directory.CreateDirectory(LogFolder);
                 var entries = Logs.ToList();
                 if (entries.Count > MaxLogs)
                     entries = entries.Take(MaxLogs).ToList();

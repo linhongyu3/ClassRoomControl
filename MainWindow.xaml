@@ -1078,8 +1078,9 @@
                 <StackPanel>
                     <Grid Margin="0,0,0,8">
                         <TextBlock Text="定时自动执行" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                        <CheckBox x:Name="ChkAutoOrganizeEnabled" IsChecked="{Binding AutoExecuteEnabled}" Margin="0,0,0,0"
-                                  VerticalAlignment="Center" HorizontalAlignment="Right" Width="44" Height="24">
+                        <CheckBox x:Name="ChkAutoOrganizeEnabled" IsChecked="False" Margin="0,0,0,0"
+                                  VerticalAlignment="Center" HorizontalAlignment="Right" Width="44" Height="24"
+                                  Click="ChkAutoOrganizeEnabled_Click">
                             <CheckBox.Template>
                                 <ControlTemplate TargetType="CheckBox">
                                     <Grid>

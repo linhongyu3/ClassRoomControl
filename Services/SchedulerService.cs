@@ -10,6 +10,7 @@ namespace ClassroomControl.Services
         private DispatcherTimer? _timer = null;
         private DateTime _targetTime;
         private bool _isScheduled;
+        private bool _hasReminded;
         private int _reminderMinutes = 5; // 提前5分钟提醒
 
         public event EventHandler<string>? StatusChanged;
@@ -22,6 +23,7 @@ namespace ClassroomControl.Services
         {
             _targetTime = targetTime;
             _isScheduled = true;
+            _hasReminded = false;
             
             StartTimer();
             StatusChanged?.Invoke(this, $"已设置定时关机：{targetTime:yyyy-MM-dd HH:mm}");
@@ -56,8 +58,9 @@ namespace ClassroomControl.Services
             var timeLeft = _targetTime - now;
 
             // 提前提醒
-            if (timeLeft.TotalMinutes <= _reminderMinutes && timeLeft.TotalMinutes > _reminderMinutes - 1)
+            if (timeLeft.TotalMinutes <= _reminderMinutes && !_hasReminded)
             {
+                _hasReminded = true;
                 ShutdownImminent?.Invoke(this, EventArgs.Empty);
             }
 
