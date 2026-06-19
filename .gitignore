@@ -1,0 +1,42 @@
+# Build results
+bin/
+obj/
+publish/
+publish-*/
+发布输出/
+Output/
+*.zip
+*.exe
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.lscache
+
+# Visual Studio cache/options directory
+.vs/
+.vscode/
+
+# NuGet packages
+packages/
+*.nupkg
+
+# Build logs
+*.log
+
+# Local development config
+appsettings.local.json
+appsettings.*.local.json
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Temporary files
+*.tmp
+*.cache

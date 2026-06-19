@@ -7,8 +7,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <ApplicationIcon>logo.ico</ApplicationIcon>
+    <Version>2.0.0</Version>
+    <FileVersion>2.0.0.0</FileVersion>
+    <ProductVersion>2.0.0</ProductVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <Title>班级电脑控制助手</Title>
+    <Product>班级电脑控制助手</Product>
+    <Company>linhongyu3</Company>
+    <Copyright>Copyright © 2026 linhongyu3 - Apache License 2.0</Copyright>
+    <Description>面向教室场景的 Windows 桌面管控工具</Description>
   </PropertyGroup>
 
   <ItemGroup>

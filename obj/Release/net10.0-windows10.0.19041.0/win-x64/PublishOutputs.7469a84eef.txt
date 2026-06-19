@@ -1,3 +1,0 @@
-D:\Product\简单的小工具\ClassroomControl\publish\班级电脑控制助手\ClassroomControl.pdb
-D:\Product\简单的小工具\ClassroomControl\publish\班级电脑控制助手\logo.ico
-D:\Product\简单的小工具\ClassroomControl\publish\班级电脑控制助手\ClassroomControl.exe
